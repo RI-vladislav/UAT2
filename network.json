@@ -1,0 +1,261 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "client": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the client eg.: WW, CoOp etc."
+      }
+    },
+    "system": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the system eg.: LSM, Waste, Compass"
+      }
+    },
+    "project": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the project: BigW, PEL, Supers"
+      }
+    },
+    "environment": {
+      "type": "string",
+      "allowedValues": [
+        "prd",
+        "crt",
+        "dev",
+        "poc",
+        "uat",
+        "dr",
+        "uat2"
+      ],
+      "metadata": {
+        "description": "The Environment type we are building, used mainly for tagging"
+      }
+    },
+    "location": {
+      "type": "string",
+      "allowedValues": [
+        "koreasouth",
+        "koreacentral",
+        "eastasia",
+        "southeastasia",
+        "centralus",
+        "eastus",
+        "eastus2",
+        "westus",
+        "westus2",
+        "westcentralus",
+        "northcentralus",
+        "southcentralus",
+        "northeurope",
+        "westeurope",
+        "japanwest",
+        "japaneast",
+        "brazilsouth",
+        "australiaeast",
+        "australiasoutheast",
+        "southindia",
+        "centralindia",
+        "westindia",
+        "canadacentral",
+        "canadaeast",
+        "ukwest",
+        "uksouth",
+        "chinaeast",
+        "chinanorth",
+        "germanycentral",
+        "germanynortheast"
+      ]
+    },
+    "vnetCIDR": {
+      "type": "string",
+      "metadata": {
+        "description": "The IP Address Space for this new virtual Network. For medium networks, we recommend that this is at least a /21 so that you can create 9 additional subnets."
+      }
+    },
+    "subnetGWcidr": {
+      "type": "string",
+      "metadata": {
+        "description": "The IP Address Space of the Application Gateway Subnet. (Reserved Exclusively for Application Gateways)"
+      }
+    },
+    "storageTLSversion": {
+      "type": "string",
+      "defaultValue": "TLS1_2",
+       "allowedValues": [
+        "TLS1_0",
+        "TLS1_1",
+        "TLS1_2"
+       ],
+      "metadata": {
+        "description": "Minimum TLS version to be permitted on requests to storage. "
+      }
+    },
+    "buildDate": {
+      "type": "string",
+      "metadata": {
+        "description": "The date of this build",
+        "group": "Tags",
+        "order": 4,
+        "question": "Please enter todays date (dd Month yyyy) : "
+      },
+      "defaultValue": "dd Month yyyy"
+    }
+  },
+  "variables": {
+    "resourceGroupLocationName": {
+      "koreasouth": "krs",
+      "koreacentral": "krc",
+      "eastasia": "eas",
+      "southeastasia": "sea",
+      "centralus": "cus",
+      "eastus": "eus",
+      "eastus2": "eu2",
+      "westus": "wus",
+      "westus2": "wu2",
+      "westcentralus": "wcu",
+      "northcentralus": "ncu",
+      "southcentralus": "scu",
+      "northeurope": "neu",
+      "westeurope": "weu",
+      "japanwest": "jpw",
+      "japaneast": "jpe",
+      "brazilsouth": "bzs",
+      "australiaeast": "aea",
+      "australiasoutheast": "ase",
+      "southindia": "sid",
+      "centralindia": "cid",
+      "westindia": "wid",
+      "canadacentral": "cac",
+      "canadaeast": "cae",
+      "ukwest": "ukw",
+      "uksouth": "uks",
+      "chinaeast": "cea",
+      "chinanorth": "cno",
+      "germanycentral": "gec",
+      "germanynortheast": "gne"
+    },
+    "vnetName": "[toLower(concat(variables('resourceGroupLocationName')[parameters('location')], '-' , parameters('system') , '-' , parameters('environment') , '-vnet'))]",
+    "gwSubnetName": "GatewaySubnet",
+    "diagnosticStorageName": "[tolower(concat(variables('resourceGroupLocationName')[parameters('location')] , parameters('system'), parameters('environment') , 'diag'))]",
+    "auditStorageName": "[tolower(concat(variables('resourceGroupLocationName')[parameters('location')] , parameters('system'), parameters('environment') , 'audit'))]"
+  },
+  "resources": [
+    {
+      "apiVersion": "2019-06-01",
+      "type": "Microsoft.Storage/storageAccounts",
+      "name": "[variables('diagnosticStorageName')]",
+      "location": "[parameters('location')]",
+      "tags": {
+        "displayName": "[variables('diagnosticStorageName')]",
+        "Client": "[parameters('client')]",
+        "System": "[parameters('system')]",
+        "Project": "[parameters('project')]",
+        "Environment": "[parameters('environment')]",
+        "BuildDate": "[parameters('buildDate')]"
+      },
+      "sku": {
+        "name": "Standard_LRS"
+      },
+      "kind": "StorageV2",
+      "properties": {
+        "encryption": {
+          "keySource": "Microsoft.Storage",
+          "services": {
+            "blob": {
+              "enabled": true
+            },
+            "file": {
+              "enabled": true
+            }
+          }
+        },
+        "supportsHttpsTrafficOnly": true,
+        "allowBlobPublicAccess": false,
+        "minimumTlsVersion": "[parameters('storageTLSversion')]"
+      }
+    },
+    {
+      "apiVersion": "2019-06-01",
+      "type": "Microsoft.Storage/storageAccounts",
+      "name": "[variables('auditStorageName')]",
+      "location": "[resourceGroup().location]",
+      "tags": {
+        "displayName": "[variables('auditStorageName')]",
+        "Client": "[parameters('client')]",
+        "System": "[parameters('system')]",
+        "Project": "[parameters('project')]",
+        "Environment": "[parameters('environment')]",
+        "BuildDate": "[parameters('buildDate')]"
+      },
+      "sku": {
+        "name": "Standard_LRS"
+      },
+      "kind": "StorageV2",
+      "properties": {
+        "encryption": {
+          "keySource": "Microsoft.Storage",
+          "services": {
+            "blob": {
+              "enabled": true
+            },
+            "file": {
+              "enabled": true
+            }
+          }
+        },
+        "supportsHttpsTrafficOnly": true,
+        "allowBlobPublicAccess": false,
+        "minimumTlsVersion": "[parameters('storageTLSversion')]"
+      }
+    },
+    {
+      "name": "[variables('vnetName')]",
+      "type": "Microsoft.Network/virtualNetworks",
+      "location": "[parameters('location')]",
+      "apiVersion": "2017-11-01",
+      "dependsOn": [
+      ],
+      "tags": {
+        "displayName": "[variables('vnetName')]",
+        "Client": "[parameters('client')]",
+        "System": "[parameters('system')]",
+        "Project": "[parameters('project')]",
+        "Environment": "[parameters('environment')]",
+        "BuildDate": "[parameters('buildDate')]"
+      },
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[parameters('vnetCIDR')]"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "[variables('GWSubnetName')]",
+            "properties": {
+              "addressPrefix": "[parameters('subnetGWcidr')]"
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "outputs": {
+    "DiagnosticStorageName": {
+      "type": "string",
+      "value": "[variables('diagnosticStorageName')]"
+    },
+    "vnetName": {
+      "type": "string",
+      "value": "[Variables('vnetName')]"
+    },
+    "SubnetGWName": {
+      "type": "string",
+      "value": "[variables('GWSubnetName')]"
+    }
+  }
+}

@@ -1,0 +1,282 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "client": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the client eg.: WW, CoOp etc."
+      }
+    },
+    "system": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the system eg.: LSM, Waste, Compass"
+      }
+    },
+    "project": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the project: BigW, PEL, Supers"
+      }
+    },
+    "environment": {
+      "type": "string",
+      "allowedValues": [
+        "prd",
+        "crt",
+        "dev",
+        "tst",
+        "poc",
+        "uat",
+        "dr",
+        "uat2"
+      ],
+      "metadata": {
+        "description": "The Environment type we are building, used mainly for tagging"
+      }
+    },
+    "location": {
+      "type": "string",
+      "allowedValues": [
+        "koreasouth",
+        "koreacentral",
+        "eastasia",
+        "southeastasia",
+        "centralus",
+        "eastus",
+        "eastus2",
+        "westus",
+        "westus2",
+        "westcentralus",
+        "northcentralus",
+        "southcentralus",
+        "northeurope",
+        "westeurope",
+        "japanwest",
+        "japaneast",
+        "brazilsouth",
+        "australiaeast",
+        "australiasoutheast",
+        "southindia",
+        "centralindia",
+        "westindia",
+        "canadacentral",
+        "canadaeast",
+        "ukwest",
+        "uksouth",
+        "chinaeast",
+        "chinanorth",
+        "germanycentral",
+        "germanynortheast"
+      ]
+    },
+    "vnetResourceGroupName": {
+      "type": "string",
+      "defaultValue": "default",
+      "metadata": {
+        "description": "Name of Resource Group hosting VNET"
+      }
+    },
+    "vnetName": {
+      "type": "string",
+      "metadata": {
+        "description": "VNET Name"
+      }
+    },
+    "subnetName": {
+      "type": "string",
+      "metadata": {
+        "description": "Subnet Name"
+      }
+    },
+    "subnetCidr": {
+      "type": "string",
+      "metadata": {
+        "description": "Subnet IP Address range"
+      }
+    },
+    "serviceEndpoints": {
+      "type": "array",
+      "defaultValue": [ ]
+    },
+    "delegations": {
+      "type": "array",
+      "defaultValue": [ ]
+    },
+    "asgDeploy": {
+      "type": "bool",
+      "defaultValue": false
+    },
+    "asgSecurityRule": {
+        "type": "object",
+        "metadata": {
+            "description": "Application Security objects security rules"
+        }
+    },
+    "securityRules": {
+        "type": "array",
+        "metadata": {
+            "description": "An array that contains objects with properties for the security rules. For format, see multiplesecurityrules.parameters.json"
+        }
+    },
+    "uriUpdateSubnetTemplate": {
+      "type": "string",
+      "defaultValue": "https://riopstools.blob.core.windows.net/armtemplates/updateSubnet.json?sv=2018-03-28&si=armtemplates&sr=b&sig=RN6kBqho%2B%2FunD55VyuWJJSqAivfPaN4V%2Fawi8pqsE0c%3D",
+      "metadata": {
+        "description": "Location of the UpdateSubnet template"
+      }
+    },
+    "buildDate": {
+      "type": "string",
+      "metadata": {
+        "description": "The date of this build",
+        "group": "Tags",
+        "order": 4,
+        "question": "Please enter todays date (dd Month yyyy) : "
+      },
+      "defaultValue": "dd Month yyyy"
+    }
+  },
+  "variables": {
+    "vnetResourceGroupName": "[if(equals(parameters('vnetResourceGroupName'),'default') , resourceGroup().name , parameters('vnetResourceGroupName') )]",
+    "subnetName": "[concat(parameters('vnetName') , '-' , parameters('subnetName'))]",
+    "nsgName": "[concat(variables('subnetName'), '-nsg')]",
+    "asgName": "[concat(parameters('system') , '-' , parameters('environment') , '-asg')]",
+    "copy": [
+            {
+                "name": "securityRules",
+                "count": "[length(parameters('securityRules'))]",
+                "input": {
+                    "name": "[parameters('securityRules')[copyIndex('securityRules')].name]",
+                    "properties": {
+                        "description": "[parameters('securityRules')[copyIndex('securityRules')].description]",
+                        "priority": "[parameters('securityRules')[copyIndex('securityRules')].priority]",
+                        "protocol": "[parameters('securityRules')[copyIndex('securityRules')].protocol]",
+                        "access": "[parameters('securityRules')[copyIndex('securityRules')].access]",
+                        "direction": "[parameters('securityRules')[copyIndex('securityRules')].direction]",
+                        "sourceAddressPrefix": "[parameters('securityRules')[copyIndex('securityRules')].sourceAddressPrefix]",
+                        "sourceAddressPrefixes": "[parameters('securityRules')[copyIndex('securityRules')].sourceAddressPrefixes]",
+                        "sourcePortRange": "[parameters('securityRules')[copyIndex('securityRules')].sourcePortRange]",
+                        "sourcePortRanges": "[parameters('securityRules')[copyIndex('securityRules')].sourcePortRanges]",
+                        "destinationAddressPrefix": "[parameters('securityRules')[copyIndex('securityRules')].destinationAddressPrefix]",
+                        "destinationAddressPrefixes": "[parameters('securityRules')[copyIndex('securityRules')].destinationAddressPrefixes]",
+                        "destinationPortRange": "[parameters('securityRules')[copyIndex('securityRules')].destinationPortRange]",
+                        "destinationPortRanges": "[parameters('securityRules')[copyIndex('securityRules')].destinationPortRanges]"
+                      }
+                }
+            }
+        ]
+  },
+  "resources": [
+    {
+      "apiVersion": "2019-06-01",
+      "type": "Microsoft.Network/virtualNetworks/subnets",
+      "name": "[concat(parameters('vnetName'), '/', variables('subnetName'))]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "addressPrefix": "[parameters('subnetCidr')]"
+      }
+    },
+    {
+      "apiVersion": "2020-07-01",
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "name": "[variables('nsgName')]",
+      "location": "[parameters('location')]",
+      "tags": {
+        "displayName": "[variables('nsgName')]",
+        "Client": "[parameters('client')]",
+        "System": "[parameters('system')]",
+        "Project": "[parameters('project')]",
+        "Environment": "[parameters('environment')]",
+        "BuildDate": "[parameters('buildDate')]"
+      },
+      "properties": {
+                "securityRules": "[variables('securityRules')]"
+      }
+    },
+    {
+      "condition": "[parameters('asgDeploy')]",
+      "comments": "Application Security Group",
+      "name": "[variables('asgName')]",
+      "type": "Microsoft.Network/applicationSecurityGroups",
+      "apiVersion": "2020-05-01",
+      "location": "[parameters('location')]",
+      "properties": {}
+    },
+    {
+      "condition": "[parameters('asgDeploy')]",
+      "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+      "name": "[concat(variables('nsgName') , '/' , 'DenyAll-' , variables('asgName'))]",
+      "apiVersion": "2018-08-01",
+      "dependsOn": [
+        "[variables('nsgName')]",
+        "[variables('asgName')]",
+        "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), variables('subnetName'))]"
+      ],
+      "properties": {
+          "priority": "[parameters('asgSecurityRule').priority]",
+          "protocol": "[parameters('asgSecurityRule').protocol]",
+          "access": "[parameters('asgSecurityRule').access]",
+          "direction": "[parameters('asgSecurityRule').direction]",
+          "sourceAddressPrefix": "[parameters('asgSecurityRule').sourceAddressPrefix]",
+          "sourceAddressPrefixes": "[parameters('asgSecurityRule').sourceAddressPrefixes]",
+          "sourceApplicationSecurityGroups": [
+            {
+              "id": "[resourceId('Microsoft.Network/applicationSecurityGroups', variables('asgName'))]"
+            }
+          ],
+          "sourcePortRange":  "[parameters('asgSecurityRule').sourcePortRange]",
+          "sourcePortRanges":  "[parameters('asgSecurityRule').sourcePortRanges]",
+          "destinationAddressPrefix": "[parameters('asgSecurityRule').destinationAddressPrefix]",
+          "destinationAddressPrefixes": "[parameters('asgSecurityRule').destinationAddressPrefixes]",
+          "destinationPortRange": "[parameters('asgSecurityRule').destinationPortRange]",
+          "destinationPortRanges": "[parameters('asgSecurityRule').destinationPortRanges]"
+      }
+    },
+    {
+      "apiVersion": "2021-04-01",
+      "name": "deploy",
+      "type": "Microsoft.Resources/deployments",
+      "resourceGroup": "[variables('vnetResourceGroupName')]",
+      "dependsOn": [
+        "[variables('nsgName')]",
+        "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), variables('subnetName'))]"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[parameters('uriUpdateSubnetTemplate')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "virtualNetworkName": {
+            "value": "[parameters('vnetName')]"
+          },
+          "subnetName": {
+            "value": "[variables('subnetName')]"
+          },
+          "subnetAddressPrefix": {
+            "value": "[parameters('subnetCidr')]"
+            // "value": "[reference(resourceId(parameters('vnetResourceGroupName'), 'Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), parameters('subnetName')), '2018-03-01').addressPrefix]"
+          },
+          "serviceEndpoints": {
+              "value": "[parameters('serviceEndpoints')]"
+          },
+          "delegations": {
+            "value": "[parameters('delegations')]"
+          },
+          "nsgId": {
+            "value": "[concat(resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName')))]"
+          }
+        }
+      }
+    }
+  ],
+  "outputs": {
+    "NSG Name": {
+      "type": "string",
+      "value": "[variables('nsgName')]"
+    }
+  }
+}

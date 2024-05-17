@@ -1,0 +1,31 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "storageAccountName": { "value": "uksrpuat2backup" },
+    "policyResourceGroupName": { "value": "default" }, // 'default' - will assume the dafault RG
+
+    "policyRules": {
+      "value": [
+          {
+            "policyName": "Daily7Days",
+            "retention": 7,
+            "filterBlobTypes": [ "blockBlob", "appendBlob" ] ,
+            "filterPrefixMatch": [ "rpuat2-sqlvm/daily" ]
+          },
+          {
+            "policyName": "Weekly30Days",
+            "retention":30,
+            "filterBlobTypes": [ "blockBlob", "appendBlob" ] ,
+            "filterPrefixMatch": [ "rpuat2-sqlvm/weekly" ]
+          },
+          {
+            "policyName": "Monthly180Days",
+            "retention": 180,
+            "filterBlobTypes": [ "blockBlob", "appendBlob" ] ,
+            "filterPrefixMatch": [ "rpuat2-sqlvm/monthly" ]
+          }
+        ]
+      }
+  }
+}

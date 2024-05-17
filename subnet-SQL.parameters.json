@@ -1,0 +1,132 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "client": { "value": "rp" },
+    "system": { "value": "rp" },
+    "project": { "value": "rp" },
+    "environment": { "value": "uat2" },
+    "location": { "value": "uksouth" },
+
+    "vnetResourceGroupName": { "value": "default" },  // 'default' if the subnet is in the same RG as current deployment
+    "vnetName": { "value": "uks-rp-uat2-vnet" },
+    "subnetName": { "value": "sqlvm" },
+    "subnetCidr": { "value": "172.29.119.0/28" },
+    "serviceEndpoints": {
+      "value": [ 
+        {
+          "service": "Microsoft.Storage"
+        },
+        {
+          "service": "Microsoft.Sql"
+        }
+      ]
+    },
+    "delegations": {
+      "value": []
+    },
+    "uriUpdateSubnetTemplate": { "value": "https://riopstools.blob.core.windows.net/armtemplates/updateSubnet.json?sv=2018-03-28&si=armtemplates&sr=b&sig=RN6kBqho%2B%2FunD55VyuWJJSqAivfPaN4V%2Fawi8pqsE0c%3D" },
+
+    "securityRules": {
+      "value": [
+          {
+            "name": "Allow_RIOFFICE_ALL_INBOUND",
+            "description": "Allow_RIOFFICE_ALL_INBOUND",
+            "priority": 1010,
+            "protocol": "*",
+            "access": "Allow",
+            "direction": "Inbound",
+            "sourceAddressPrefix": "89.197.164.142",
+            "sourcePortRange": "*",
+            "destinationAddressPrefix": "*",
+            "destinationPortRange": "*"
+          },
+          {
+            "name": "Allow_AUSTRALIAOFFICE_ALL_INBOUND",
+            "description": "Allow_AUSTRALIAOFFICE_ALL_INBOUND",
+            "priority": 1030,
+            "protocol": "*",
+            "access": "Allow",
+            "direction": "Inbound",
+            "sourceAddressPrefix": "14.202.150.50",
+            "sourcePortRange": "*",
+            "destinationAddressPrefix": "*",
+            "destinationPortRange": "*"
+          },
+          {
+            "name": "Allow_RIOFFICE_NEW_ALL_INBOUND",
+            "description": "Allow_RIOFFICE_NEW_INBOUND",
+            "priority": 1040,
+            "protocol": "*",
+            "access": "Allow",
+            "direction": "Inbound",
+            "sourceAddressPrefix": "193.117.158.10",
+            "sourcePortRange": "*",
+            "destinationAddressPrefix": "*",
+            "destinationPortRange": "*"
+          },
+          {
+            "name": "Allow_LAHOREOFFICE_ALL_INBOUND",
+            "description": "Allow_LAHOREOFFICE_ALL_INBOUND",
+            "priority": 1050,
+            "protocol": "*",
+            "access": "Allow",
+            "direction": "Inbound",
+            "sourceAddressPrefix": "103.8.113.162",
+            "sourcePortRange": "*",
+            "destinationAddressPrefix": "*",
+            "destinationPortRange": "*"
+          },
+          {
+            "name": "Allow_LAHOREOFFICE2_ALL_INBOUND",
+            "description": "Allow_LAHOREOFFICE2_ALL_INBOUND",
+            "priority": 1060,
+            "protocol": "*",
+            "access": "Allow",
+            "direction": "Inbound",
+            "sourceAddressPrefix": "202.166.174.90",
+            "sourcePortRange": "*",
+            "destinationAddressPrefix": "*",
+            "destinationPortRange": "*"
+          },
+          {
+            "name": "Allow_RISUPPORT_ALL_INBOUND",
+            "description": "Allows all traffic from RISupport (India)",
+            "priority": 1130,
+            "protocol": "*",
+            "access": "Allow",
+            "direction": "Inbound",
+            "sourceAddressPrefix": "125.22.43.16",
+            "sourcePortRange": "*",
+            "destinationAddressPrefix": "*",
+            "destinationPortRange": "*"
+          },
+          {
+            "name": "Allow_MERAKI_VPN_ALL_INBOUND",
+            "description": "Allows all traffic from Meraki VPN",
+            "priority": 1150,
+            "protocol": "*",
+            "access": "Allow",
+            "direction": "Inbound",
+            "sourceAddressPrefix": "98.174.100.41",
+            "sourcePortRange": "*",
+            "destinationAddressPrefix": "*",
+            "destinationPortRange": "*"
+          },
+          {
+            "name": "Allow_WATCHGUARD_VPN_ALL_INBOUND",
+            "description": "Allows all traffic from Watchguard VPN",
+            "priority": 1160,
+            "protocol": "*",
+            "access": "Allow",
+            "direction": "Inbound",
+            "sourceAddressPrefix": "20.26.194.170",
+            "sourcePortRange": "*",
+            "destinationAddressPrefix": "*",
+            "destinationPortRange": "*"
+          }
+      ]
+    },
+    "buildDate": { "value": "15 May 2023" }
+  }
+}

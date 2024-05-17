@@ -1,0 +1,283 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "client": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the client eg.: WW, CoOp etc."
+      }
+    },
+    "system": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the system eg.: LSM, Waste, Compass"
+      }
+    },
+    "project": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the project: BigW, PEL, Supers"
+      }
+    },
+    "environment": {
+      "type": "string",
+      "allowedValues": [
+        "prd",
+        "crt",
+        "dev",
+        "poc",
+        "uat",
+        "dr",
+        "uat2"
+         
+      ],
+      "metadata": {
+        "description": "The Environment type we are building, used mainly for tagging"
+      }
+    },
+    "location": {
+      "type": "string",
+      "allowedValues": [
+        "koreasouth",
+        "koreacentral",
+        "eastasia",
+        "southeastasia",
+        "centralus",
+        "eastus",
+        "eastus2",
+        "westus",
+        "westus2",
+        "westcentralus",
+        "northcentralus",
+        "southcentralus",
+        "northeurope",
+        "westeurope",
+        "japanwest",
+        "japaneast",
+        "brazilsouth",
+        "australiaeast",
+        "australiasoutheast",
+        "southindia",
+        "centralindia",
+        "westindia",
+        "canadacentral",
+        "canadaeast",
+        "ukwest",
+        "uksouth",
+        "chinaeast",
+        "chinanorth",
+        "germanycentral",
+        "germanynortheast"
+      ]
+    },
+    "storageAccountName": {
+      "type": "string"
+    },
+    "containerNames": {
+      "type": "array",
+      "defaultValue": [  ],
+      "metadata": {
+        "description": "Array of containers, by default nothing get created."
+      }
+    },
+    "queueNames": {
+      "type": "array",
+      "defaultValue": [  ],
+      "metadata": {
+        "description": "Array of queues, by default nothing get created."
+      }
+    },
+    "storageResourceGroupName": {
+      "type": "string"
+    },
+     "storageType": {
+      "type": "string",
+      "defaultValue": "Standard_LRS",
+      "metadata": {
+        "description": "Geo-replication type of Storage account"
+      },
+      "allowedValues": [
+        "Standard_LRS",
+        "Standard_GRS",
+        "Standard_ZRS",
+        "Premium_LRS"
+      ]
+    },
+    "storageTLSversion": {
+      "type": "string",
+      "defaultValue": "TLS1_2",
+       "allowedValues": [
+        "TLS1_0",
+        "TLS1_1",
+        "TLS1_2"
+       ],
+      "metadata": {
+        "description": "Minimum TLS version to be permitted on requests to storage. "
+      }
+    },
+    "storageHttpsTrafficOnly": {
+      "type": "bool",
+      "defaultValue": true,
+       "allowedValues": [
+        true,
+        false
+       ],
+      "metadata": {
+        "description": "Allows https traffic only to storage service if sets to true. The default value is true since API version 2019-04-01."
+      }
+    },
+    "storageBlobPublicAccess": {
+      "type": "bool",
+      "defaultValue": false,
+       "allowedValues": [
+        true,
+        false
+       ],
+      "metadata": {
+        "description": "Allow or disallow public access to all blobs or containers in the storage account. The default interpretation is true for this property."
+      }
+    },
+    "storageAccessTier": {
+      "type": "string",
+      "defaultValue": "Hot",
+       "allowedValues": [
+        "Hot",
+        "Cool"
+       ],
+      "metadata": {
+        "description": "Required for storage accounts where kind = BlobStorage."
+      }
+    },
+    "deployIPRestrictions": {
+      "type": "bool",
+      "defaultValue": true,
+       "allowedValues": [
+        true,
+        false
+       ],
+      "metadata": {
+        "description": "Deploy IP restrictions."
+      }
+    },
+   "allowedIPtoStorage": {
+      "type": "array",
+        "defaultvalue": [
+          {
+            "value": "0.0.0.0", // All
+            "action": "Allow"
+          }
+      ]
+    },
+    "deployVNETRestrictions": {
+      "type": "bool",
+      "defaultValue": true,
+       "allowedValues": [
+        true,
+        false
+       ],
+      "metadata": {
+        "description": "Deploy VNET restrictions."
+      }
+    },
+    "allowedSubnet": {
+        "type": "array",
+        "defaultvalue": [
+          {
+            "subscriptionId": "",
+            "resourceGroupName": "",
+            "vnetName": "",
+            "subnetName": ""
+          }
+      ]
+    },
+   "uriDeployStorageTemplate": {
+      "type": "string",
+        "defaultvalue": ""
+    },
+    "buildDate": {
+      "type": "string",
+      "metadata": {
+        "description": "The date of this build",
+        "group": "Tags",
+        "order": 4,
+        "question": "Please enter todays date (dd Month yyyy) : "
+      },
+      "defaultValue": "dd Month yyyy"
+    }
+  },
+  "variables": {
+    "resourceGroupLocationName": {
+      "koreasouth": "krs",
+      "koreacentral": "krc",
+      "eastasia": "eas",
+      "southeastasia": "sea",
+      "centralus": "cus",
+      "eastus": "eus",
+      "eastus2": "eu2",
+      "westus": "wus",
+      "westus2": "wu2",
+      "westcentralus": "wcu",
+      "northcentralus": "ncu",
+      "southcentralus": "scu",
+      "northeurope": "neu",
+      "westeurope": "weu",
+      "japanwest": "jpw",
+      "japaneast": "jpe",
+      "brazilsouth": "bzs",
+      "australiaeast": "aea",
+      "australiasoutheast": "ase",
+      "southindia": "sid",
+      "centralindia": "cid",
+      "westindia": "wid",
+      "canadacentral": "cac",
+      "canadaeast": "cae",
+      "ukwest": "ukw",
+      "uksouth": "uks",
+      "chinaeast": "cea",
+      "chinanorth": "cno",
+      "germanycentral": "gec",
+      "germanynortheast": "gne"
+    },
+    "storageAccountName": "[tolower(concat(variables('resourceGroupLocationName')[parameters('location')] , parameters('client'), parameters('environment') , parameters('storageAccountName')))]",
+    "storageResourceGroupName": "[if(equals(parameters('storageResourceGroupName'),'default') , resourceGroup().name , parameters('storageResourceGroupName') )]"
+  },
+  "resources": [
+    {
+      "apiVersion": "2019-08-01",
+      "name": "deploy",
+      "type": "Microsoft.Resources/deployments",
+      "resourceGroup": "[variables('storageResourceGroupName')]",
+      "dependsOn": [],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[parameters('uriDeployStorageTemplate')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+            "client": { "value": "[parameters('client')]"},
+            "system": { "value": "[parameters('system')]"},
+            "project": { "value": "[parameters('project')]"},
+            "environment": { "value": "[parameters('environment')]"},
+            "location": { "value": "[parameters('location')]"},
+            "storageAccountName": { "value": "[variables('storageAccountName')]"},
+            "containerNames": { "value": "[parameters('containerNames')]"},
+            "queueNames": { "value": "[parameters('queueNames')]"},
+            "storageType": { "value": "[parameters('storageType')]"},
+            "storageTLSversion": { "value": "[parameters('storageTLSversion')]"},
+            "storageHttpsTrafficOnly": { "value": "[parameters('storageHttpsTrafficOnly')]"},
+            "storageBlobPublicAccess": { "value": "[parameters('storageBlobPublicAccess')]"},
+            "storageAccessTier": { "value": "[parameters('storageAccessTier')]"},
+            "deployIPRestrictions": { "value": "[parameters('deployIPRestrictions')]"},
+            "allowedIPtoStorage": { "value": "[parameters('allowedIPtoStorage')]"},
+            "deployVNETRestrictions": { "value": "[parameters('deployVNETRestrictions')]"},
+            "allowedSubnet": { "value": "[parameters('allowedSubnet')]"},
+            "buildDate": { "value": "[parameters('buildDate')]"}
+        }
+      }
+    }
+  ],
+  "outputs": {
+  }
+}

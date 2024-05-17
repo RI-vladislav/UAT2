@@ -1,0 +1,64 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "client": { "value": "rp" },
+    "system": { "value": "rp" },
+    "project": { "value": "rp" },
+    "environment": { "value": "uat2" },
+    "location": { "value": "uksouth" },
+
+    "storageAccountName": { "value": "archive" },
+    "containerNames": { "value": [ "inbound", "outbound" ] },  // [] - empty array will not create any containers
+    "queueNames": { "value": [ ] },  // [] - empty array will not create any queues
+    "storageResourceGroupName": { "value": "default" }, // 'default' - will deploy to the default ResourceGroup
+    "storageType": { "value": "Standard_GRS" },
+    "storageTLSversion": { "value": "TLS1_2" },
+    "storageHttpsTrafficOnly": { "value": true },
+    "storageBlobPublicAccess": { "value": false },
+    "storageAccessTier": { "value": "Cool" },
+    "deployIPRestrictions": { "value": true },
+    "allowedIPtoStorage": { "value" :[
+      {
+        "value": "37.122.249.222", // VPN
+        "action": "Allow"
+      },
+      {
+        "value": "14.202.150.50", // Australia Office
+        "action": "Allow"
+      },
+      {
+        "value": "193.117.158.10", // RI Office
+        "action": "Allow"
+      },
+      {
+        "value": "98.174.100.41", // Meraki VPN
+        "action": "Allow"
+      },
+      {
+        "value": "20.26.194.170", // Watchguard UK VP
+        "action": "Allow"
+      }
+     ]
+    },
+    "deployVNETRestrictions": { "value": true },
+    "allowedSubnet": {
+      "value": [
+        {
+          "subscriptionId": "695132ff-350b-4751-bb31-cd23cf410c6e",
+          "resourceGroupName": "UKS-RP-MGMT-UAT2-RG",
+          "vnetName": "uks-rp-uat2-vnet",
+          "subnetName": "uks-rp-uat2-vnet-sqlvm"
+        },
+        {
+          "subscriptionId": "695132ff-350b-4751-bb31-cd23cf410c6e",
+          "resourceGroupName": "UKS-RP-MGMT-UAT-RG",
+          "vnetName": "uks-rp-uat2-vnet",
+          "subnetName": "uks-rp-uat2-vnet-ftpvm"
+        }
+      ]
+    },
+    "uriDeployStorageTemplate": { "value": "https://riopstools.blob.core.windows.net/armtemplates/storageAccount.json?sv=2019-10-10&si=armtemplates&sr=b&sig=K%2F8KrIVKlA%2FhV6zPh3OG4l3APvNENKCnzzSyUNjo%2Fu4%3D" },
+    "buildDate": { "value": "16 MAY 2024" }
+  }
+}

@@ -1,0 +1,132 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "allowVirtualNetworkAccess-local": {
+      "type": "bool",
+      "defaultValue": true
+    },
+    "allowForwardedTraffic-local": {
+      "type": "bool",
+      "defaultValue": true
+    },
+    "allowGatewayTransit-local": {
+      "type": "bool",
+      "defaultValue": true
+    },
+    "useRemoteGateways-local": {
+      "type": "bool",
+      "defaultValue": true
+    },
+    "allowVirtualNetworkAccess-remote": {
+      "type": "bool",
+      "defaultValue": true
+    },
+    "allowForwardedTraffic-remote": {
+      "type": "bool",
+      "defaultValue": true
+    },
+    "allowGatewayTransit-remote": {
+      "type": "bool",
+      "defaultValue": true
+    },
+    "useRemoteGateways-remote": {
+      "type": "bool",
+      "defaultValue": true
+    },
+    "existingLocalVnet": {
+      "type": "string",
+      "metadata": {
+        "description": "Local VNET name"
+      }
+    },
+    "existingRemoteSubscriptionId": {
+      "type": "string",
+      "metadata": {
+        "description": "Set the remote subscription name"
+      }
+    },
+    "existingRemoteVnet": {
+      "type": "string",
+      "metadata": {
+        "description": "Set the remote VNet name"
+      }
+    },
+    "existingRemoteVnetRG": {
+      "type": "string",
+      "metadata": {
+        "description": "Sets the remote VNet Resource group"
+      }
+    },
+      "location": {
+        "type": "string",
+        "defaultValue": "[resourceGroup().location]",
+        "metadata": {
+          "description": "Location for all resources."
+        }
+      },
+      "remoteVNETLocation": {
+        "type": "string",
+        "metadata": {
+          "description": "Location for all resources."
+        }
+      }
+    },
+  "variables": {
+    "remotevNet": "[resourceId(parameters('existingRemoteSubscriptionId'), parameters('existingRemoteVnetRG'), 'Microsoft.Network/virtualNetworks' ,parameters('existingRemoteVnet'))]",
+    "localvNet": "[resourceId(subscription().subscriptionId, resourceGroup().name, 'Microsoft.Network/virtualNetworks' ,parameters('existingLocalVnet'))]",
+    "peeringName": "[concat(parameters('existingLocalVnet'),'/To_',parameters('existingRemoteVnet'))]",
+    "remotePeeringName": "[concat(parameters('existingRemoteVnet'),'/To_',parameters('existingLocalVnet'))]"
+  },
+  "resources": [
+    {
+      "apiVersion": "2019-11-01",
+      "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+      "name": "[variables('peeringName')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "allowVirtualNetworkAccess": "[parameters('allowVirtualNetworkAccess-local')]",
+        "allowForwardedTraffic": "[parameters('allowForwardedTraffic-local')]",
+        "allowGatewayTransit": "[parameters('allowGatewayTransit-local')]",
+        "useRemoteGateways": "[parameters('useRemoteGateways-local')]",
+        "remoteVirtualNetwork": {
+          "id": "[variables('remotevNet')]"
+        }
+      }
+    },
+    {
+    "apiVersion": "2017-05-10",
+    "name": "nestedTemplate",
+    "type": "Microsoft.Resources/deployments",
+    "resourceGroup": "[parameters('existingRemoteVnetRG')]",
+    "subscriptionId": "[parameters('existingRemoteSubscriptionId')]",
+    "properties": {
+        "mode": "Incremental",
+        "template": {
+            "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+            "contentVersion": "1.0.0.0",
+            "parameters": {},
+            "variables": {},
+            "resources": [
+                {
+                  "apiVersion": "2019-11-01",
+                  "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+                  "name": "[variables('remotePeeringName')]",
+                  "location": "[parameters('remoteVNETLocation')]",
+                  "properties": {
+                    "allowVirtualNetworkAccess": "[parameters('allowVirtualNetworkAccess-remote')]",
+                    "allowForwardedTraffic": "[parameters('allowForwardedTraffic-remote')]",
+                    "allowGatewayTransit": "[parameters('allowGatewayTransit-remote')]",
+                    "useRemoteGateways": "[parameters('useRemoteGateways-remote')]",
+                    "remoteVirtualNetwork": {
+                      "id": "[variables('localvNet')]"
+                    }
+                  }
+                }
+            ]
+        },
+        "parameters": {}
+      }
+    }
+  ]
+}

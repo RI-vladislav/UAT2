@@ -1,0 +1,17 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "client": { "value": "rp" },
+    "system": { "value": "rp" },
+    "project": { "value": "rp" },
+    "environment": { "value": "uat2" },
+    "location": { "value": "uksouth" },
+    "vnetCIDR": { "value": "172.29.119.0/24" },
+    "subnetGWcidr": { "value": "172.29.119.240/29" },
+    "storageTLSversion": { "value": "TLS1_2" },
+    "buildDate": { "value": "16 May 2024" }
+  }
+}
+
+

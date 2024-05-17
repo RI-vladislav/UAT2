@@ -1,0 +1,83 @@
+﻿{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "storageAccountName": {
+      "type": "string"
+    },
+    "policyResourceGroupName": {
+      "type": "string",
+      "defaultValue": "default",
+      "metadata": {
+        "description": "Provide if in the different Resource Group than default"
+      }
+    },
+    "policyRules": {
+      "type": "array"
+    },
+    "uriPolicyStorage": {
+      "type": "string",
+      "defaultValue": "https://riopstools.blob.core.windows.net/armtemplates/policyStorage.json?sv=2019-10-10&si=armtemplates&sr=b&sig=uWchfC0X1XDaxKdYO5HEouq7a2B0SIcYB3Kd2MBzim8%3D"
+    }
+  },
+  "variables": { 
+    "policyResourceGroupName": "[if(equals(parameters('policyResourceGroupName'),'default') , resourceGroup().name , parameters('policyResourceGroupName') )]",
+    "copy": [
+            {
+              "name": "rules",
+              "count": "[length(parameters('policyRules'))]",
+              "input": {
+                  
+                "enabled": true,
+                "name":  "[parameters('policyRules')[copyIndex('rules')].policyName]",
+                "type": "Lifecycle",
+                "definition": {
+                  "actions": {
+                    "version": {
+                      "delete": {
+                        "daysAfterCreationGreaterThan": "[parameters('policyRules')[copyIndex('rules')].retention]"
+                      }
+                    },
+                    "baseBlob": {
+                      "delete": {
+                        "daysAfterModificationGreaterThan": "[parameters('policyRules')[copyIndex('rules')].retention]"
+                      }
+                    },
+                    "snapshot": {
+                      "delete": {
+                        "daysAfterCreationGreaterThan":  "[parameters('policyRules')[copyIndex('rules')].retention]"
+                      }
+                    }
+                  },
+                  "filters": {
+                    "blobTypes":  "[parameters('policyRules')[copyIndex('rules')].filterBlobTypes]",
+                    "prefixMatch":  "[parameters('policyRules')[copyIndex('rules')].filterPrefixMatch]"
+                  }
+                }
+              }
+            }
+      ]
+   },
+  "resources": [
+    {
+      "apiVersion": "2019-08-01",
+      "name": "[concat('storagePoliciesDeploy-' , parameters('storageAccountName'))]",
+      "type": "Microsoft.Resources/deployments",
+      "resourceGroup": "[variables('policyResourceGroupName')]",
+      "dependsOn": [],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[parameters('uriPolicyStorage')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "storageAccountName": { "value": "[parameters('storageAccountName')]" },
+          "policyRules": { "value": "[variables('rules')]" }
+
+        }
+      }
+    }
+  ],
+  "outputs": { }
+}

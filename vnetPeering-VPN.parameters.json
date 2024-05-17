@@ -1,0 +1,23 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "allowVirtualNetworkAccess-local": { "value": true},
+    "allowForwardedTraffic-local": { "value": true},
+    "allowGatewayTransit-local": { "value": false},
+    "useRemoteGateways-local": { "value": true},
+
+    "allowVirtualNetworkAccess-remote": { "value": true},
+    "allowForwardedTraffic-remote": { "value": true},
+    "allowGatewayTransit-remote": { "value": true},
+    "useRemoteGateways-remote": { "value": false},
+
+    "existingLocalVnet": { "value": "uks-rp-uat2-vnet" },
+    "existingRemoteSubscriptionId": { "value": "1e387ddd-34df-4900-8e4e-0547aff75685" },
+    "existingRemoteVnet": { "value": "UKS-RI-VPN-TEST-RG" }, // UK:uks-ri-vpn-vnet, US: us-ri-vpn-vnet, AUS: australias-ri-vpn-vnet   
+    "existingRemoteVnetRG": { "value": "UKS-RI-VPN-DEV-RG" },
+
+    "location": { "value": "uksouth" },
+    "remoteVNETLocation": { "value": "uksouth" }
+  }
+}

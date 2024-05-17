@@ -1,0 +1,58 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "client": { "value": "rp" },
+    "system": { "value": "rp" },
+    "project": { "value": "rp" },
+    "environment": { "value": "uat2" },
+    "location": { "value": "uksouth" },
+
+    "storageAccountName": { "value": "diag" },
+    "containerNames": { "value": [ ] },  // [] - empty array will not create any containers
+    "queueNames": { "value": [ ] },  // [] - empty array will not create any queues
+    "storageResourceGroupName": { "value": "default" }, // 'default' - will deploy to the default ResourceGroup
+    "storageType": { "value": "Standard_LRS" },
+    "storageTLSversion": { "value": "TLS1_2" },
+    "storageHttpsTrafficOnly": { "value": true },
+    "storageBlobPublicAccess": { "value": false },
+    "storageAccessTier": { "value": "Cool" },
+    "deployIPRestrictions": { "value": false },
+    "allowedIPtoStorage": { "value" :[
+      {
+        "value": "37.122.249.222", // VPN
+        "action": "Allow"
+      },
+      {
+        "value": "14.202.150.50", // Australia Office
+        "action": "Allow"
+      },
+      {
+        "value": "193.117.158.10", // RI Office
+        "action": "Allow"
+      },
+      {
+        "value": "98.174.100.41", // Meraki VPN
+        "action": "Allow"
+      },
+      {
+        "value": "20.26.194.170", // Watchguard UK VP
+        "action": "Allow"
+      }
+     ]
+    },
+    "deployVNETRestrictions": { "value": false },
+    "allowedSubnet": {
+      "value": [
+        {
+          "subscriptionId": "N/A",
+          "resourceGroupName": "N/A",
+          "vnetName": "N/A",
+          "subnetName": "N/A"
+        }
+      ]
+    },
+    "uriDeployStorageTemplate": { "value": "https://riopstools.blob.core.windows.net/armtemplates/storageAccount.json?sv=2019-10-10&si=armtemplates&sr=b&sig=K%2F8KrIVKlA%2FhV6zPh3OG4l3APvNENKCnzzSyUNjo%2Fu4%3D" },
+    "buildDate": { "value": "16 May 2024" }
+  }
+}
